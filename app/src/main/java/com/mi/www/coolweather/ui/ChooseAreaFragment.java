@@ -1,4 +1,4 @@
-package com.mi.www.coolweather.ui.fragment;
+package com.mi.www.coolweather.ui;
 
 
 import android.app.ProgressDialog;
@@ -85,6 +85,10 @@ public class ChooseAreaFragment extends Fragment{
                 }else if(mCurrentLevel == LEVEL_CITY){
                     mSelectedCity = mCityList.get(i);
                     querCountries();
+                }else if(mCurrentLevel == LEVEL_COUNTRY){
+                    String weatherId = mCountryList.get(i).getWeatherId();
+                    WeatherActivity.actionStart(getContext(),weatherId);
+                    getActivity().finish();
                 }
             }
         });

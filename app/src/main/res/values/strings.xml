@@ -6,4 +6,5 @@
     <string name="china">中国</string>
     <string name="download_failed">加载失败</string>
     <string name="downloading">正在加载...</string>
+    <string name="forecast">预报</string>
 </resources>
