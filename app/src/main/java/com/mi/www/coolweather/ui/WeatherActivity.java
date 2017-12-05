@@ -6,10 +6,14 @@ import android.content.SharedPreferences;
 import android.graphics.Color;
 import android.os.Build;
 import android.preference.PreferenceManager;
+import android.support.v4.view.GravityCompat;
+import android.support.v4.widget.DrawerLayout;
+import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
+import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.ScrollView;
@@ -29,7 +33,7 @@ import okhttp3.Call;
 import okhttp3.Callback;
 import okhttp3.Response;
 
-public class WeatherActivity extends AppCompatActivity {
+public class WeatherActivity extends AppCompatActivity implements View.OnClickListener{
     private static final String EXTRA_WEATHER_ID ="weather_id";
     private static final String WEATHER_KEY ="c62affbd245f4d528681195b38cf58dd";
     private ScrollView scrollViewWeather;
@@ -44,6 +48,10 @@ public class WeatherActivity extends AppCompatActivity {
     private TextView tvCarWash;
     private TextView tvSport;
     private ImageView ivWeatherBg;
+    public SwipeRefreshLayout swipeRefreshLayout;
+    private Button btnNav;
+    public DrawerLayout drawerLayout;
+    private String mWeatherId;
 
     public static void actionStart(Context context, String weatherId){
         Intent intent =new Intent(context,WeatherActivity.class);
@@ -80,6 +88,11 @@ public class WeatherActivity extends AppCompatActivity {
         tvCarWash = findViewById(R.id.tv_car_wash);
         tvSport = findViewById(R.id.tv_sport);
         ivWeatherBg = findViewById(R.id.iv_weather_bg);
+        swipeRefreshLayout = findViewById(R.id.swipe_refresh);
+        swipeRefreshLayout.setColorSchemeResources(R.color.colorPrimary);
+        btnNav = findViewById(R.id.btn_nav);
+        drawerLayout= findViewById(R.id.drawer);
+        btnNav.setOnClickListener(this);
     }
 
     private void initData() {
@@ -88,24 +101,32 @@ public class WeatherActivity extends AppCompatActivity {
         String weatherBg = prefs.getString("bing_pic",null);
         if(weatherSting != null){
             Weather weather = Utility.handleWeatherResponse(weatherSting);
+            mWeatherId = weather.basic.weatherId;
             showWeatherInfo(weather);
         }else{
-            String weatherId = getIntent().getStringExtra(EXTRA_WEATHER_ID);
+            mWeatherId = getIntent().getStringExtra(EXTRA_WEATHER_ID);
             scrollViewWeather.setVisibility(View.INVISIBLE);
-            requestWeather(weatherId);
+            requestWeather(mWeatherId);
         }
         if(weatherBg != null){
             Glide.with(this).load(weatherBg).into(ivWeatherBg);
         }else{
             loadBingPic();
         }
+
+        swipeRefreshLayout.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
+            @Override
+            public void onRefresh() {
+                requestWeather(mWeatherId);
+            }
+        });
     }
 
     /**
      * 从服务器获取天气信息
      * @param weatherId
      */
-    private void requestWeather(String weatherId) {
+    public void requestWeather(String weatherId) {
         String weatherUrl = "http://guolin.tech/api/weather?cityid="+weatherId+
                 "&key="+WEATHER_KEY;
         HttpUtil.sendOkHttpRequest(weatherUrl, new Callback() {
@@ -127,6 +148,7 @@ public class WeatherActivity extends AppCompatActivity {
                             Toast.makeText(WeatherActivity.this,
                                     "获取天气信息失败", Toast.LENGTH_SHORT).show();
                         }
+                        swipeRefreshLayout.setRefreshing(false);
                     }
                 });
             }
@@ -138,6 +160,7 @@ public class WeatherActivity extends AppCompatActivity {
                     public void run() {
                         Toast.makeText(WeatherActivity.this,
                                 "获取天气信息失败", Toast.LENGTH_SHORT).show();
+                        swipeRefreshLayout.setRefreshing(false);
                     }
                 });
             }
@@ -213,5 +236,14 @@ public class WeatherActivity extends AppCompatActivity {
 
             }
         });
+    }
+
+    @Override
+    public void onClick(View view) {
+        switch(view.getId()){
+            case R.id.btn_nav:
+                drawerLayout.openDrawer(GravityCompat.START);
+                break;
+        }
     }
 }

@@ -16,6 +16,7 @@ import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.mi.www.coolweather.MainActivity;
 import com.mi.www.coolweather.R;
 import com.mi.www.coolweather.db.City;
 import com.mi.www.coolweather.db.Country;
@@ -55,6 +56,7 @@ public class ChooseAreaFragment extends Fragment{
     private int mCurrentLevel;
     private Province mSelectedProvince;
     private City mSelectedCity;
+    private String weatherId;
 
     public ChooseAreaFragment() {
         // Required empty public constructor
@@ -86,9 +88,18 @@ public class ChooseAreaFragment extends Fragment{
                     mSelectedCity = mCityList.get(i);
                     querCountries();
                 }else if(mCurrentLevel == LEVEL_COUNTRY){
-                    String weatherId = mCountryList.get(i).getWeatherId();
-                    WeatherActivity.actionStart(getContext(),weatherId);
-                    getActivity().finish();
+                    weatherId = mCountryList.get(i).getWeatherId();
+                    //如果是在在MainActivity
+                    if(getActivity() instanceof MainActivity){
+                        WeatherActivity.actionStart(getContext(),weatherId);
+                        getActivity().finish();
+                    }else if(getActivity() instanceof WeatherActivity){
+                        WeatherActivity weatherActivity = (WeatherActivity) getActivity();
+                        weatherActivity.drawerLayout.closeDrawers();
+                        weatherActivity.swipeRefreshLayout.setRefreshing(true);
+                        weatherActivity.requestWeather(weatherId);
+                    }
+
                 }
             }
         });
