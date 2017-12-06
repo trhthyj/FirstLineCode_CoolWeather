@@ -24,6 +24,7 @@ import com.bumptech.glide.Glide;
 import com.mi.www.coolweather.R;
 import com.mi.www.coolweather.gson.Forecast;
 import com.mi.www.coolweather.gson.Weather;
+import com.mi.www.coolweather.service.AutoUpdateService;
 import com.mi.www.coolweather.util.HttpUtil;
 import com.mi.www.coolweather.util.Utility;
 
@@ -52,6 +53,7 @@ public class WeatherActivity extends AppCompatActivity implements View.OnClickLi
     private Button btnNav;
     public DrawerLayout drawerLayout;
     private String mWeatherId;
+    private String mWeatherBg;
 
     public static void actionStart(Context context, String weatherId){
         Intent intent =new Intent(context,WeatherActivity.class);
@@ -98,7 +100,7 @@ public class WeatherActivity extends AppCompatActivity implements View.OnClickLi
     private void initData() {
         SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
         String weatherSting = prefs.getString("weather",null);
-        String weatherBg = prefs.getString("bing_pic",null);
+        mWeatherBg = prefs.getString("bing_pic",null);
         if(weatherSting != null){
             Weather weather = Utility.handleWeatherResponse(weatherSting);
             mWeatherId = weather.basic.weatherId;
@@ -108,8 +110,8 @@ public class WeatherActivity extends AppCompatActivity implements View.OnClickLi
             scrollViewWeather.setVisibility(View.INVISIBLE);
             requestWeather(mWeatherId);
         }
-        if(weatherBg != null){
-            Glide.with(this).load(weatherBg).into(ivWeatherBg);
+        if(mWeatherBg != null){
+            Glide.with(this).load(mWeatherBg).into(ivWeatherBg);
         }else{
             loadBingPic();
         }
@@ -117,6 +119,10 @@ public class WeatherActivity extends AppCompatActivity implements View.OnClickLi
         swipeRefreshLayout.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
             @Override
             public void onRefresh() {
+                SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(WeatherActivity.this);
+                String weatherSting = prefs.getString("weather",null);
+                Weather weather = Utility.handleWeatherResponse(weatherSting);
+                mWeatherId = weather.basic.weatherId;
                 requestWeather(mWeatherId);
             }
         });
@@ -174,6 +180,12 @@ public class WeatherActivity extends AppCompatActivity implements View.OnClickLi
      * @param weather
      */
     private void showWeatherInfo(Weather weather) {
+        if(weather != null && "ok".equals(weather.status)){
+            Intent intent = new Intent(this, AutoUpdateService.class);
+            startService(intent);
+        }else{
+            Toast.makeText(this, "获取天气信息失败", Toast.LENGTH_SHORT).show();
+        }
         String cityName = weather.basic.cityName;
         String updateTime = weather.basic.update.updateTime.split(" ")[1];
         String degree = weather.now.temperature + "℃";
