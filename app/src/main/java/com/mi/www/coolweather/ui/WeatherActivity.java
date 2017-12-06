@@ -148,7 +148,7 @@ public class WeatherActivity extends AppCompatActivity implements View.OnClickLi
                             SharedPreferences.Editor editor = PreferenceManager
                                     .getDefaultSharedPreferences(WeatherActivity.this).edit();
                             editor.putString("weather",responseText);
-                            editor.apply();//todo 和commit区别
+                            editor.apply();
                             showWeatherInfo(weather);
                         }else{
                             Toast.makeText(WeatherActivity.this,
