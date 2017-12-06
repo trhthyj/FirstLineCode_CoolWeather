@@ -5,6 +5,19 @@ package com.mi.www.coolweather.gson;
  */
 
 public class AQI {
+    /*
+
+    "aqi": {
+        "city": {
+            "aqi": "27",
+            "pm25": "17",
+        }
+    }
+
+    */
+
+
+
     public AQICity city;
 
     public class AQICity {
